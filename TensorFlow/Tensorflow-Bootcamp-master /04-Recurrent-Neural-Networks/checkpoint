@@ -1,2 +1,0 @@
-model_checkpoint_path: "ex_time_series_model_copy"
-all_model_checkpoint_paths: "ex_time_series_model_copy"
