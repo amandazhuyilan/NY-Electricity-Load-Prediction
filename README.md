@@ -5,6 +5,7 @@ Hourly weather data available from [Mesowest](https://developers.synopticdata.co
 ## Python
 ### Prerequisites
 - Python 3.9+
+- `numpy`
 
 ### Prepare Data
 ```bash
