@@ -34,12 +34,11 @@ def load_one_day_data(date: str) -> np.ndarray:
         if date in filename.name:
             raw_data = load_data(filename)
 
-    print("Loaded ", len(os.listdir('data')), "csv files")
-    print("Loaded ", raw_data)
     return raw_data
 
 def process_data(raw_data: np.ndarray) -> np.ndarray:
     processed_data = np.zeros([np.shape(raw_data)[0], 3], dtype=object)
+    # normalize the EDT and EST timezones to UTC 
     utc = pytz.utc
     eastern = pytz.timezone('US/Eastern')
 
@@ -51,7 +50,46 @@ def process_data(raw_data: np.ndarray) -> np.ndarray:
     
     return processed_data
 
+
+# perform normalization
+def normalize_multi_feature(X):
+    """ Normalizes the features in X
+    
+    returns a normalized version of X where
+    the mean value of each feature is 0 and the standard deviation
+    is 1. This is often a good preprocessing step to do when
+    working with learning algorithms.
+    """
+    mu = np.zeros(len(X))
+    sigma = np.zeros(len(X))
+    for i, feature in enumerate(X.transpose()):
+        if i == 0: continue
+        mu_ = np.mean(feature)
+        sigma_ = np.std(feature)
+        mu[i] = mu_
+        sigma[i] = sigma_
+        X[:, i] = ((feature - mu_) / sigma_).T
+        
+    return X, mu, sigma
+
+def gradient_descent_multi(X, y, theta, alpha, iterations):
+    m = len(y)
+    J_history = []
+    for i in range(iterations):
+        # here it won't work for datetime and strings
+        theta = theta - ((alpha / m) * X.transpose() @ (X @ theta - y))
+        J_history.append(float(cost_function(X, y, theta)))
+    return theta, J_history
+
 if __name__ == "__main__":
     raw_data_20011225 = load_one_day_data("20011225")
-    process_data(raw_data_20011225)
-    # load_all_data()
+    processed_data = process_data(raw_data_20011225)
+    X = processed_data[:,:3]    # input_feature
+    y = processed_data[:, :-1]  # target
+    # X, mu, sigma = normalize_multi_feature(X)
+    
+    alpha = 0.01
+    iterations = 1500
+    initial_theta = np.zeros(np.shape(processed_data))
+    theta, J_history = gradient_descent_multi(X, y, initial_theta, alpha, iterations)
+    
